@@ -8,7 +8,7 @@ On the first run, you'll need to specify the location of the
 `HardwareSimulator.[sh|bat]` executable. You can do that likeso:
 
 ```
-./auton2t.py set_executable <path to executable>
+./auton2t.py executable <path to executable>
 ```
 
 Afterwards checking the completion of any `*.hdl` file will be as easy as doing:

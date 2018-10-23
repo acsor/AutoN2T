@@ -30,7 +30,7 @@ SCRIPT_ROOT = abspath(dirname(__file__))
 CONFIG_FILENAME = ".n2trc"
 KEY_HWEX = "hardware_simulator_executable"
 
-ACT_EXECUTABLE = "set_executable"
+ACT_EXECUTABLE = "executable"
 ACT_REPORT = "report"
 ACT_CONFIG = "show_config"
 
