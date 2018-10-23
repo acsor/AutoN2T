@@ -8,7 +8,7 @@ from os.path import abspath, dirname, join
 from subprocess import call
 
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 SCRIPT_ROOT = abspath(dirname(__file__))
 
 # Config key of the Hardware Simulator executable path
@@ -97,6 +97,50 @@ class ConfigManager(object):
                         self._config[key.strip()] = value.strip()
 
 
+def print_report(c, path, colwidth=20):
+    """
+    Subroutine to print a Nand2Tetris Hardware Simulator report on ``path``
+    by means of the configuration from ``c``.
+
+    :param c: ``ConfigManager`` instance.
+    :param path: directory path containing ``*.tst`` files.
+    :param colwidth: minimum width (in units of spaces) of the first column.
+    :return: exit status of the operation.
+    """
+    extension = ".tst"
+    # Whether *.tst files have been reported in the current directory
+    tst_found = False
+
+    if not KEY_HWEX in c:
+        print(
+            "No executable found for the Hardware Simulator. Please rerun"
+            " the script with the %s option." % ACT_EXECUTABLE,
+            file=sys.stderr
+        )
+
+        return 1
+
+    print("[Hardware Simulator executable in %s]\n" % c[KEY_HWEX])
+
+    for e in listdir(path):
+        if e.endswith(extension):
+            tst_found = True
+            space_padding = max(colwidth - len(e), 0)
+            fullpath = abspath(join(path, e))
+
+            print(e, " " * space_padding, end="", flush=True)
+            call(
+                [c[KEY_HWEX], fullpath],
+                stdout=sys.stdout,
+                stderr=sys.stderr
+            )
+
+    if not tst_found:
+        print("No %s files found in %s" % (extension, path))
+
+    return 0
+
+
 def main():
     """
     :return: exit status code of the program.
@@ -138,27 +182,7 @@ def main():
 
         return 0
     elif args.action == ACT_REPORT:
-        if not KEY_HWEX in c:
-            print(
-                "No executable found for the Hardware Simulator. Please rerun"
-                " the script with the %s option." % ACT_EXECUTABLE,
-                file=sys.stderr
-            )
-
-            return 1
-
-        print("[Hardware Simulator executable in %s]\n" % c[KEY_HWEX])
-
-        for e in listdir(args.directory):
-            if e.endswith(".tst"):
-                fullpath = abspath(join(args.directory, e))
-
-                print("%s\t\t" % e, end="", flush=True)
-                call(
-                    [c[KEY_HWEX], fullpath],
-                    stdout=sys.stdout,
-                    stderr=sys.stderr
-                )
+        return print_report(c, args.directory)
     elif args.action == ACT_CONFIG:
         print("[Config settings stored in %s]\n" % c.configpath)
 
