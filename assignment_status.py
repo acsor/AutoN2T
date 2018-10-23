@@ -19,6 +19,7 @@ ACT_EXECUTABLE = "set_executable"
 ACT_REPORT = "report"
 ACT_CONFIG = "show_config"
 
+
 class ConfigManager(object):
     DEFAULT_CONFIG_PATH = join(SCRIPT_ROOT, CONFIG_FILENAME)
     
@@ -61,7 +62,7 @@ class ConfigManager(object):
         self._configpath = None
 
     def __iter__(self):
-        """Return an iterator of (key, value) pairs."""
+        """Return an iterator of ``(key, value)`` pairs."""
         for key, value in self._config.items():
             yield key, value
 
@@ -71,6 +72,10 @@ class ConfigManager(object):
                 outstream.write("%s=%s\n" % (key, value))
 
         self._parse_config()
+
+    @property
+    def configpath(self):
+        return self._configpath
     
     def _parse_config(self):
         """
@@ -155,7 +160,7 @@ def main():
                     stderr=sys.stderr
                 )
     elif args.action == ACT_CONFIG:
-        print("[Config settings stored in %s]\n" % CONFIG_FILENAME)
+        print("[Config settings stored in %s]\n" % c.configpath)
 
         for key, value in c:
             print("%s=%s" % (key, value))
