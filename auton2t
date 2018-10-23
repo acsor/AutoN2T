@@ -170,11 +170,11 @@ def main():
 
     executable_parser = subparsers.add_parser(
         ACT_EXECUTABLE, help="Store the new location of the Hardware Simulator"
-        " executable and exit."
+        " executable (or display the existing one with no arguments) and exit."
     )
     report_parser = subparsers.add_parser(
         ACT_REPORT, help="Run the Hardware Simulator on a batch of files and"
-        " report their individual result."
+        " report their individual outcome."
     )
     config_parser = subparsers.add_parser(
         ACT_CONFIG, help="Print out the configuration settings stored in %s." %
@@ -182,7 +182,7 @@ def main():
     )
     # TO-DO Add uninstall sub command
 
-    executable_parser.add_argument("filepath", nargs=1, metavar="FILE PATH")
+    executable_parser.add_argument("filepath", nargs='?', metavar="FILE PATH")
     report_parser.add_argument(
         "directory", nargs='?', default=getcwd(), metavar="DIR",
         help="Directory where to look for .tst files (defaults to ./)."
@@ -192,8 +192,13 @@ def main():
     args = parser.parse_args()
 
     if args.action == ACT_EXECUTABLE:
-        c[KEY_HWEX] = abspath(args.filepath[0])
-        c.write()
+        if args.filepath:
+            c[KEY_HWEX] = abspath(args.filepath[0])
+            c.write()
+        elif KEY_HWEX in c:
+            print("HardwareSimulator executable stored in", c[KEY_HWEX])
+        else:
+            print("No executable has been set yet.")
 
         return 0
     elif args.action == ACT_REPORT:
