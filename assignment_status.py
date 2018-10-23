@@ -8,18 +8,19 @@ from os.path import abspath, dirname, join
 from subprocess import call
 
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 SCRIPT_ROOT = abspath(dirname(__file__))
 
 # Config key of the Hardware Simulator executable path
+CONFIG_FILENAME = ".n2trc"
 KEY_HWEX = "hardware_simulator_executable"
 
 ACT_EXECUTABLE = "set_executable"
 ACT_REPORT = "report"
+ACT_CONFIG = "show_config"
 
 class ConfigManager(object):
-    CONFIG_NAME = ".n2trc"
-    DEFAULT_CONFIG_PATH = join(SCRIPT_ROOT, CONFIG_NAME)
+    DEFAULT_CONFIG_PATH = join(SCRIPT_ROOT, CONFIG_FILENAME)
     
     def __init__(self, configpath=None):
         """
@@ -57,6 +58,11 @@ class ConfigManager(object):
         self._config = None
         self._configpath = None
 
+    def __iter__(self):
+        """Return an iterator of (key, value) pairs."""
+        for key, value in self._config.items():
+            yield key, value
+
     def write(self):
         with open(self._configpath, "wt") as outstream:
             for key, value in self._config.items():
@@ -86,16 +92,22 @@ def main():
         "assignment",
         epilog="Version %s" % __version__
     )
-
     subparsers = parser.add_subparsers(title="Commands", dest="action")
+    subparsers.required = True
+
     executable_parser = subparsers.add_parser(
         ACT_EXECUTABLE, help="Store the new location of the Hardware Simulator"
         " executable and exit."
     )
     report_parser = subparsers.add_parser(
         ACT_REPORT, help="Run the Hardware Simulator on a batch of files and"
-        " report their result."
+        " report their individual result."
     )
+    config_parser = subparsers.add_parser(
+        ACT_CONFIG, help="Print out the configuration settings stored in %s." %
+        CONFIG_FILENAME
+    )
+    # TO-DO Add uninstall sub command
 
     executable_parser.add_argument("filepath", nargs=1, metavar="FILE PATH")
     report_parser.add_argument(
@@ -115,8 +127,8 @@ def main():
         if not KEY_HWEX in c:
             print(
                 "No executable found for the Hardware Simulator. Please rerun"
-                " the script and specify it in the [-e|--set-executable]"
-                " option.", file=sys.stderr
+                " the script with the %s option." % ACT_EXECUTABLE,
+                file=sys.stderr
             )
 
             return 1
@@ -133,6 +145,11 @@ def main():
                     stdout=sys.stdout,
                     stderr=sys.stderr
                 )
+    elif args.action == ACT_CONFIG:
+        print("[Config settings stored in %s]\n" % CONFIG_FILENAME)
+
+        for key, value in c:
+            print("%s=%s" % (key, value))
     else:
         print("Action %s not recognized" % args.action, file=sys.stderr)
         return 1
