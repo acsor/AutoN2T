@@ -5,6 +5,7 @@ import sys
 
 from os import access, getcwd, listdir
 from os.path import abspath, dirname, join
+from subprocess import call
 
 
 __version__ = "0.1.0"
@@ -74,7 +75,7 @@ class ConfigManager(object):
                     if line and not line.isspace() and not line.startswith("#"):
                         key, value = line.split("=", maxsplit=1)
 
-                        self._config[key] = value
+                        self._config[key.strip()] = value.strip()
 
 
 def main():
@@ -112,13 +113,18 @@ def main():
 
             return 1
 
-        print("Hardware Simulator executable in %s" % c[KEY_HWEX])
+        print("[Hardware Simulator executable in %s]\n" % c[KEY_HWEX])
 
         for e in listdir(args.directory):
             if e.endswith(".tst"):
-                print(e)
+                fullpath = abspath(join(args.directory, e))
 
-        # TO-DO Finish implementing
+                print("%s\t\t" % e, end="", flush=True)
+                call(
+                    [c[KEY_HWEX], fullpath],
+                    stdout=sys.stdout,
+                    stderr=sys.stderr
+                )
 
 
 if __name__ == "__main__":
