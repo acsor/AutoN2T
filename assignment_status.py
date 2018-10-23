@@ -24,6 +24,8 @@ class ConfigManager(object):
     
     def __init__(self, configpath=None):
         """
+        Manages the project configuration in a ``key=value`` format.
+
         :param configpath: file path of the script configuration.
         """
         self._config = dict()
@@ -71,6 +73,10 @@ class ConfigManager(object):
         self._parse_config()
     
     def _parse_config(self):
+        """
+        Parses the configuration from a file input to ``__init__()`` and reads
+        it into memory.
+        """
         if not access(self._configpath, os.F_OK):
             # If the file does not exist, we create it empty and exit
             with open(self._configpath, "wt") as outstream:
@@ -87,6 +93,9 @@ class ConfigManager(object):
 
 
 def main():
+    """
+    :return: exit status code of the program.
+    """
     parser = argparse.ArgumentParser(
         description="Reports the status of .tst files of a Nand2Tetris "
         "assignment",
