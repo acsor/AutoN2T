@@ -114,7 +114,7 @@ def main():
 
         print("Hardware Simulator executable in %s" % c[KEY_HWEX])
 
-        for e in listdir(args.directory[0]):
+        for e in listdir(args.directory):
             if e.endswith(".tst"):
                 print(e)
 
