@@ -11,7 +11,7 @@ __version__ = "0.1.0"
 SCRIPT_ROOT = abspath(dirname(__file__))
 
 # Config key of the Hardware Simulator executable path
-KEY_HWEX = "hardware_simulator_executabe"
+KEY_HWEX = "hardware_simulator_executable"
 
 
 class ConfigManager(object):
@@ -71,9 +71,10 @@ class ConfigManager(object):
         else:
             with open(self._configpath) as instream:
                 for line in instream:
-                    key, value = line.split("=", maxsplit=1)
+                    if line and not line.isspace() and not line.startswith("#"):
+                        key, value = line.split("=", maxsplit=1)
 
-                    self._config[key] = value
+                        self._config[key] = value
 
 
 def main():
@@ -89,7 +90,7 @@ def main():
         " exit."
     )
     parser.add_argument(
-        "directory", nargs=1, required=False, default=getcwd(), metavar="DIR",
+        "directory", nargs='?', default=getcwd(), metavar="DIR",
         help="Directory where to look for .tst files (defaults to ./)."
     )
 
