@@ -8,12 +8,14 @@ from os.path import abspath, dirname, join
 from subprocess import call
 
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 SCRIPT_ROOT = abspath(dirname(__file__))
 
 # Config key of the Hardware Simulator executable path
 KEY_HWEX = "hardware_simulator_executable"
 
+ACT_EXECUTABLE = "set_executable"
+ACT_REPORT = "report"
 
 class ConfigManager(object):
     CONFIG_NAME = ".n2trc"
@@ -85,25 +87,31 @@ def main():
         epilog="Version %s" % __version__
     )
 
-    parser.add_argument(
-        "-e", "--set-executable", nargs=1, metavar="FULL PATH",
-        help="Store the new location of the Hardware Simulator executable and"
-        " exit."
+    subparsers = parser.add_subparsers(title="Commands", dest="action")
+    executable_parser = subparsers.add_parser(
+        ACT_EXECUTABLE, help="Store the new location of the Hardware Simulator"
+        " executable and exit."
     )
-    parser.add_argument(
+    report_parser = subparsers.add_parser(
+        ACT_REPORT, help="Run the Hardware Simulator on a batch of files and"
+        " report their result."
+    )
+
+    executable_parser.add_argument("filepath", nargs=1, metavar="FILE PATH")
+    report_parser.add_argument(
         "directory", nargs='?', default=getcwd(), metavar="DIR",
         help="Directory where to look for .tst files (defaults to ./)."
     )
 
-    args = parser.parse_args()
     c = ConfigManager()
+    args = parser.parse_args()
 
-    if args.set_executable:
-        c[KEY_HWEX] = abspath(args.set_executable[0])
+    if args.action == ACT_EXECUTABLE:
+        c[KEY_HWEX] = abspath(args.filepath[0])
         c.write()
 
         return 0
-    else:
+    elif args.action == ACT_REPORT:
         if not KEY_HWEX in c:
             print(
                 "No executable found for the Hardware Simulator. Please rerun"
@@ -125,6 +133,9 @@ def main():
                     stdout=sys.stdout,
                     stderr=sys.stderr
                 )
+    else:
+        print("Action %s not recognized" % args.action, file=sys.stderr)
+        return 1
 
 
 if __name__ == "__main__":
