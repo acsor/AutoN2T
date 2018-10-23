@@ -23,7 +23,7 @@ from os.path import abspath, dirname, join
 from subprocess import call
 
 
-__version__ = "0.3.1"
+__version__ = "0.4.2"
 SCRIPT_ROOT = abspath(dirname(__file__))
 
 # Config key of the Hardware Simulator executable path
@@ -193,7 +193,7 @@ def main():
 
     if args.action == ACT_EXECUTABLE:
         if args.filepath:
-            c[KEY_HWEX] = abspath(args.filepath[0])
+            c[KEY_HWEX] = abspath(args.filepath)
             c.write()
         elif KEY_HWEX in c:
             print("HardwareSimulator executable stored in", c[KEY_HWEX])
