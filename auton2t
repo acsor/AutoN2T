@@ -26,8 +26,8 @@ from subprocess import call
 __version__ = "0.4.2"
 SCRIPT_ROOT = abspath(dirname(__file__))
 
+CONFIG_FILENAME = ".n2tconfig"
 # Config key of the Hardware Simulator executable path
-CONFIG_FILENAME = ".n2trc"
 KEY_HWEX = "hardware_simulator_executable"
 
 ACT_EXECUTABLE = "executable"
@@ -145,9 +145,7 @@ def print_report(c, path, colwidth=20):
 
             print(e, " " * space_padding, end="", flush=True)
             call(
-                [c[KEY_HWEX], fullpath],
-                stdout=sys.stdout,
-                stderr=sys.stderr
+                [c[KEY_HWEX], fullpath], stdout=sys.stdout, stderr=sys.stderr
             )
 
     if not tst_found:
