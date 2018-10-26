@@ -3,17 +3,17 @@
 # MIT License
 #
 # Copyright (c) 2018 Oscar
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,13 +26,12 @@ from __future__ import print_function
 import argparse
 import os
 import sys
-
-from os import access, getcwd, listdir, F_OK, R_OK, W_OK
-from os.path import abspath, dirname, join
+from os import access, getcwd, listdir, remove
 from subprocess import call
 
+from os.path import abspath, dirname, join
 
-__version__ = "0.4.2"
+__version__ = "0.5.2"
 SCRIPT_ROOT = abspath(dirname(__file__))
 
 CONFIG_FILENAME = ".n2tconfig"
@@ -42,6 +41,7 @@ KEY_HWEX = "hardware_simulator_executable"
 ACT_EXECUTABLE = "executable"
 ACT_REPORT = "report"
 ACT_CONFIG = "show_config"
+ACT_UNINSTALL = "uninstall"
 
 
 class ConfigManager(object):
@@ -60,9 +60,9 @@ class ConfigManager(object):
         else:
             configdir = dirname(configpath)
 
-            if not access(configdir, F_OK):
+            if not access(configdir, os.F_OK):
                 raise OSError("Directory %s does not exist" % configdir)
-            elif not access(configdir, R_OK | W_OK):
+            elif not access(configdir, os.R_OK | os.W_OK):
                 raise OSError("Directory %s is not RW" % configdir)
             else:
                 self._configpath = configpath
@@ -163,6 +163,38 @@ def print_report(c, path, colwidth=20):
     return 0
 
 
+def uninstall(config):
+    """
+    Uninstalls the file resources associated with the script and reports the
+    status to the console.
+
+    :param config: ``ConfigManager`` instance.
+    :return:
+        * ``0``   In case of success
+        * ``1``   In case of failure
+        * ``2``   If no files to remove where found
+    """
+    configpath = ConfigManager.DEFAULT_CONFIG_PATH
+
+    # Note that configpath may always exist, as ConfigManager recreates it
+    # while instantiating a new instance of its own
+    if configpath and access(configpath, os.F_OK):
+        print("Removing %s..." % configpath, end=" ")
+
+        try:
+            remove(configpath)
+        except OSError as e:
+            print("failed: %s" % e.strerror)
+            return 1
+
+        print("OK.")
+
+        return 0
+    else:
+        print("No files found to remove.", file=sys.stderr)
+        return 2
+
+
 def main():
     """
     :return: exit status code of the program.
@@ -187,7 +219,9 @@ def main():
         ACT_CONFIG, help="Print out the configuration settings stored in %s." %
         CONFIG_FILENAME
     )
-    # TO-DO Add uninstall sub command
+    uninstall_parser = subparsers.add_parser(
+        ACT_UNINSTALL, help="Uninstall the files associated with this script."
+    )
 
     executable_parser.add_argument("filepath", nargs='?', metavar="FILE PATH")
     report_parser.add_argument(
@@ -215,6 +249,8 @@ def main():
 
         for key, value in c:
             print("%s=%s" % (key, value))
+    elif args.action == ACT_UNINSTALL:
+        uninstall(c)
     else:
         print("Action %s not recognized" % args.action, file=sys.stderr)
         return 1
