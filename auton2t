@@ -31,7 +31,7 @@ from subprocess import call
 
 from os.path import abspath, dirname, join
 
-__version__ = "0.5.2"
+__version__ = "0.5.3"
 SCRIPT_ROOT = abspath(dirname(__file__))
 
 CONFIG_FILENAME = ".n2tconfig"
@@ -234,12 +234,24 @@ def main():
 
     if args.action == ACT_EXECUTABLE:
         if args.filepath:
-            c[KEY_HWEX] = abspath(args.filepath)
-            c.write()
+            args.filepath = abspath(args.filepath)
+
+            if not access(args.filepath, os.F_OK | os.X_OK):
+                print(
+                    "Error: %s does not exist or has no execute permissions." %
+                    args.filepath, file=sys.stderr
+                )
+
+                return 1
+            else:
+                c[KEY_HWEX] = args.filepath
+                c.write()
         elif KEY_HWEX in c:
             print("HardwareSimulator executable stored in", c[KEY_HWEX])
         else:
             print("No executable has been set yet.")
+
+            return 1
 
         return 0
     elif args.action == ACT_REPORT:
