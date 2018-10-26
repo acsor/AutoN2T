@@ -27,7 +27,7 @@ import argparse
 import os
 import sys
 
-from os import access, getcwd, listdir
+from os import access, getcwd, listdir, F_OK, R_OK, W_OK
 from os.path import abspath, dirname, join
 from subprocess import call
 
@@ -114,9 +114,9 @@ class ConfigManager(object):
             raise OSError("%s has no read permissions" % self._configpath)
         else:
             with open(self._configpath) as instream:
-                for line in instream:
-                    if line and not line.isspace() and not line.startswith("#"):
-                        key, value = line.split("=", maxsplit=1)
+                for l in instream:
+                    if l and not l.isspace() and not l.startswith("#"):
+                        key, value = l.split("=", 1)
 
                         self._config[key.strip()] = value.strip()
 
@@ -135,7 +135,7 @@ def print_report(c, path, colwidth=20):
     # Whether *.tst files have been reported in the current directory
     tst_found = False
 
-    if not KEY_HWEX in c:
+    if KEY_HWEX not in c:
         print(
             "No executable found for the Hardware Simulator. Please rerun"
             " the script with the %s option." % ACT_EXECUTABLE,
