@@ -31,7 +31,7 @@ from subprocess import call
 
 from os.path import abspath, dirname, join
 
-__version__ = "0.5.3"
+__version__ = "0.5.4"
 SCRIPT_ROOT = abspath(dirname(__file__))
 
 CONFIG_FILENAME = ".n2tconfig"
@@ -152,7 +152,19 @@ def print_report(c, path, colwidth=20):
             space_padding = max(colwidth - len(e), 0)
             fullpath = abspath(join(path, e))
 
-            print(e, " " * space_padding, end="", flush=True)
+            if sys.version_info >= (3, 0):
+                print(e, " " * space_padding, end="", flush=True)
+            else:
+                # Python 2 print() has no flush named-parameter and we need to
+                # resort to more obstruse means. Furthermore, we can't even be
+                # sure that sys.stdout is of type file, and hence has flush()!
+                # Note that that a weird Python 2 installation may not display
+                # the *.tst names (unless we assign out to a BufferedWriter --
+                # but who's taking the trouble, now that Py2 is near its EOL?
+                if hasattr(sys.stdout, "flush") and callable(sys.stdout.flush):
+                    print(e, " " * space_padding, end="")
+                    sys.stdout.flush()
+
             call(
                 [c[KEY_HWEX], fullpath], stdout=sys.stdout, stderr=sys.stderr
             )
@@ -172,7 +184,7 @@ def uninstall(config):
     :return:
         * ``0``   In case of success
         * ``1``   In case of failure
-        * ``2``   If no files to remove where found
+        * ``2``   If no files to remove were found
     """
     configpath = ConfigManager.DEFAULT_CONFIG_PATH
 
@@ -184,7 +196,7 @@ def uninstall(config):
         try:
             remove(configpath)
         except OSError as e:
-            print("failed: %s" % e.strerror)
+            print("failed: %s" % e.strerror, file=sys.stderr)
             return 1
 
         print("OK.")
@@ -262,7 +274,7 @@ def main():
         for key, value in c:
             print("%s=%s" % (key, value))
     elif args.action == ACT_UNINSTALL:
-        uninstall(c)
+        return uninstall(c)
     else:
         print("Action %s not recognized" % args.action, file=sys.stderr)
         return 1
